@@ -74,6 +74,7 @@
         <th>Nombre</th>
         <th>Escuela</th>
         <th>Fecha</th>
+        <th>Hora</th>
         <th>Estado</th>
         <th>Acción</th>
       </tr>
@@ -126,6 +127,11 @@
         const tdFecha = document.createElement("td");
         tdFecha.textContent = formatFecha(item.Fecha);
         fila.appendChild(tdFecha);
+
+        // Hora  <-- Aquí agregamos la columna Hora
+        const tdHora = document.createElement("td");
+        tdHora.textContent = item.Hora || "";
+        fila.appendChild(tdHora);
 
         // Estado
         const tdEstado = document.createElement("td");
