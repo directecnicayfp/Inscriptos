@@ -145,6 +145,7 @@
           tdEstado.classList.remove("estado-no-asistio");
           tdEstado.classList.add("estado-asistio");
           item.Estado = "Asistió";
+          actualizarEstadoBackend(item);
         });
 
         const btnNoAsistio = document.createElement("button");
@@ -155,6 +156,7 @@
           tdEstado.classList.remove("estado-asistio");
           tdEstado.classList.add("estado-no-asistio");
           item.Estado = "No asistió";
+          actualizarEstadoBackend(item);
         });
 
         tdAccion.appendChild(btnAsistio);
@@ -178,6 +180,28 @@
 
     // Cargar datos al inicio
     cargarDatos();
+
+    async function actualizarEstadoBackend(item) {
+  try {
+    const response = await fetch("https://script.google.com/macros/s/AKfycbwBLei7HKiXoeWdOEifTLmGePA2YhNf4DJf_chUoKoeyodiySVmOE9ubX8cqsHfbFfXjw/exec", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        accion: "actualizarEstado",
+        nombre: item.Nombre,
+        escuela: item.Escuela,
+        fecha: formatFecha(item.Fecha),
+        estado: item.Estado
+      })
+    });
+    const result = await response.json();
+    if (result.result !== "success") {
+      console.error("Error al actualizar estado en backend:", result.message);
+    }
+  } catch (error) {
+    console.error("Error en fetch actualizarEstadoBackend:", error);
+  }
+}
   </script>
 </body>
 </html>
