@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planilla de Reuniones</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    #filtros {
+      margin-bottom: 15px;
+      text-align: center;
+    }
+    input[type="date"] {
+      padding: 6px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    th, td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+    th {
+      background-color: #007BFF;
+      color: #fff;
+    }
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    .estado-asistio {
+      background-color: #c8e6c9; /* verde pastel */
+    }
+    .estado-no-asistio {
+      background-color: #f8d7da; /* rojo pastel */
+    }
+    button.estado-btn {
+      padding: 4px 8px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      margin: 2px;
+    }
+    button.asistio { background-color: #81c784; color: white; }
+    button.no-asistio { background-color: #f28b82; color: white; }
+  </style>
+</head>
+<body>
+  <h2>Planilla de Reuniones</h2>
+
+  <div id="filtros">
+    <label>Filtrar por fecha: <input type="date" id="filtroFecha"></label>
+  </div>
+
+  <table id="tabla">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Escuela</th>
+        <th>Fecha</th>
+        <th>Estado</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Datos se cargan aquí -->
+    </tbody>
+  </table>
+
+  <script>
+    const url = "https://script.google.com/macros/s/AKfycbwBLei7HKiXoeWdOEifTLmGePA2YhNf4DJf_chUoKoeyodiySVmOE9ubX8cqsHfbFfXjw/exec?listado=true";
+    let datosOriginales = [];
+
+    // Función para formatear fecha ISO a YYYY-MM-DD
+    function formatFecha(fechaISO) {
+      if (!fechaISO) return "";
+      return fechaISO.split("T")[0]; // toma solo la parte antes de la T
+    }
+
+    async function cargarDatos() {
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (!Array.isArray(data)) { console.error("Formato no esperado:", data); return; }
+        datosOriginales = data; // Guardamos la data original
+        mostrarDatos(data);
+      } catch (error) {
+        console.error("Error al cargar los datos:", error);
+      }
+    }
+
+    function mostrarDatos(data) {
+      const tbody = document.querySelector("#tabla tbody");
+      tbody.innerHTML = "";
+
+      data.forEach((item, index) => {
+        const fila = document.createElement("tr");
+
+        // Nombre
+        const tdNombre = document.createElement("td");
+        tdNombre.textContent = item.Nombre || "";
+        fila.appendChild(tdNombre);
+
+        // Escuela
+        const tdEscuela = document.createElement("td");
+        tdEscuela.textContent = item.Escuela || "";
+        fila.appendChild(tdEscuela);
+
+        // Fecha
+        const tdFecha = document.createElement("td");
+        tdFecha.textContent = formatFecha(item.Fecha);
+        fila.appendChild(tdFecha);
+
+        // Estado
+        const tdEstado = document.createElement("td");
+        tdEstado.textContent = item.Estado || "";
+        if (item.Estado === "Asistió") tdEstado.classList.add("estado-asistio");
+        else if (item.Estado === "No asistió") tdEstado.classList.add("estado-no-asistio");
+        fila.appendChild(tdEstado);
+
+        // Acciones (botones)
+        const tdAccion = document.createElement("td");
+
+        const btnAsistio = document.createElement("button");
+        btnAsistio.textContent = "Asistió";
+        btnAsistio.classList.add("estado-btn","asistio");
+        btnAsistio.addEventListener("click", () => {
+          tdEstado.textContent = "Asistió";
+          tdEstado.classList.remove("estado-no-asistio");
+          tdEstado.classList.add("estado-asistio");
+          item.Estado = "Asistió";
+        });
+
+        const btnNoAsistio = document.createElement("button");
+        btnNoAsistio.textContent = "No asistió";
+        btnNoAsistio.classList.add("estado-btn","no-asistio");
+        btnNoAsistio.addEventListener("click", () => {
+          tdEstado.textContent = "No asistió";
+          tdEstado.classList.remove("estado-asistio");
+          tdEstado.classList.add("estado-no-asistio");
+          item.Estado = "No asistió";
+        });
+
+        tdAccion.appendChild(btnAsistio);
+        tdAccion.appendChild(btnNoAsistio);
+        fila.appendChild(tdAccion);
+
+        tbody.appendChild(fila);
+      });
+    }
+
+    // Filtro por fecha
+    const filtroFecha = document.getElementById("filtroFecha");
+    filtroFecha.addEventListener("input", () => {
+      const fecha = filtroFecha.value;
+      if (!fecha) mostrarDatos(datosOriginales);
+      else {
+        const filtrados = datosOriginales.filter(d => formatFecha(d.Fecha) === fecha);
+        mostrarDatos(filtrados);
+      }
+    });
+
+    // Cargar datos al inicio
+    cargarDatos();
+  </script>
+</body>
+</html>
